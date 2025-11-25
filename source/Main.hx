@@ -53,7 +53,7 @@ class Main extends Sprite
 		width: 1280, // WINDOW width
 		height: 720, // WINDOW height
 		initialState: TitleState, // initial game state
-		framerate: 60, // default framerate
+		framerate: 120, // default framerate
 		skipSplash: true, // if the default flixel splash screen should be skipped
 		startFullscreen: false // if the game should start at fullscreen mode
 	};
@@ -156,6 +156,11 @@ class Main extends Sprite
 		#if ACHIEVEMENTS_ALLOWED Achievements.load(); #end
 		addChild(new FlxGame(game.width, game.height, game.initialState, game.framerate, game.framerate, game.skipSplash, game.startFullscreen));
 
+		FlxG.updateFramerate = ClientPrefs.data.framerate;
+		FlxG.drawFramerate   = ClientPrefs.data.framerate;
+		Lib.current.stage.frameRate = ClientPrefs.data.framerate;
+
+
 		#if !mobile
 		fpsVar = new FPSCounter(10, 3, 0xFFFFFF);
 		addChild(fpsVar);
@@ -176,8 +181,8 @@ class Main extends Sprite
 		FlxG.mouse.visible = false;
 		#end
 
-		FlxG.fixedTimestep = false;
-		FlxG.game.focusLostFramerate = 60;
+		FlxG.fixedTimestep = true;
+		FlxG.game.focusLostFramerate = 120;
 		FlxG.keys.preventDefaultKeys = [TAB];
 		
 		#if CRASH_HANDLER

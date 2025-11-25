@@ -28,6 +28,8 @@ class Paths
 {
 	inline public static var SOUND_EXT = #if web "mp3" #else "ogg" #end;
 	inline public static var VIDEO_EXT = "mp4";
+	public static var graphics:Map<String, FlxGraphic> = new Map<String, FlxGraphic>();
+
 
 	public static function excludeAsset(key:String) {
 		if (!dumpExclusions.contains(key))
@@ -560,4 +562,39 @@ class Paths
 		spr.loadAtlasEx(folderOrImg, spriteJson, animationJson);
 	}
 	#end
+
+		/**
+	 * Gets an image in any mod or base asset to the gpu when possible.
+	 * @see https://github.com/Ralsin/FNF-MintEngine/blob/1c681b35e081c1b297f47ed06815503f6ed7089a/source/funkin/api/FileManager.hx#L45
+	 * @param key The path of the image
+	 * @param library The image package. (ex shared). NOTE: Will search through other packages to find the image when possible.
+	 * @param avoidGPU Force loading to  of the graphic to the cpu.
+	 * @return The image as a `FlxGraphic`. Will retrun the image path if gpu caching is not possible.
+	 */
+	static public function gpuBitmap(key:String, ?library:String, avoidGPU:Bool = false):FlxGraphicAsset {
+		var gfx:FlxGraphic = image(key, library);
+		var file:String = gfx.assetsKey; // ← convertir FlxGraphic a String (ruta)
+
+		var bitmap:BitmapData = Assets.exists(file) ? OpenFlAssets.getBitmapData(file) : null;
+
+		if (avoidGPU || bitmap?.image == null) {
+			bitmap = null;
+			return file;
+		}
+
+		@:privateAccess {
+			if (!graphics.exists(file)) {
+				bitmap.disposeImage();
+			} else {
+				bitmap = null;
+				return graphics.get(file);
+			}
+		}
+
+		var graphic:FlxGraphic = FlxGraphic.fromBitmapData(bitmap, false, file, false);
+		graphic.persist = true;
+		graphics.set(file, graphic);
+		return graphic;
+	}
+
 }
